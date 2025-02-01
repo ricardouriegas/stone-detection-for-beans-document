@@ -15,3 +15,5 @@
 *.synctex.gz
 *.xdv
 *.pdf
+*.run.xml
+*blx.bib
