@@ -80,7 +80,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Desarrollo Experimental}
-    En este trabajo se desarrollo un sistema capaz de detectar piedras en los frijoles dada una foto (sin usar ningún tipo de red neuronal). Para ello se utiliza la librería OpenCV en Python, en combinación de la librería PyQt6 para la interfaz gráfica.
+    En este trabajo se desarrollo un sistema capaz de detectar piedras en los frijoles dada una foto (sin usar ningún tipo de red neuronal). Para ello se utiliza la librería OpenCV\cite{opencv} en Python\cite{python}, en combinación de la librería PyQt6\cite{pyqt6} para la interfaz gráfica.
     Debido a las limitaciones de tiempo y recursos, se desarrolla el sistema solamente para 2 tipos de frijoles; pinto y negro. 
 
     \subsection{Características del Frijol}
@@ -96,7 +96,7 @@
     \subsubsection{Frijol Negro}
     El frijol negro tiene las siguientes características:
     \begin{enumerate}
-        \item Color negro uniforme con un punto blanco que aparece en el hilum\cite{semillas}.
+        \item Color negro uniforme con un punto blanco en el hilum\cite{semillas}.
         \item Las piedras que llegan a aparecer en este tipo de frijoles son color gris claro (cercano al color hueso\cite{pantone}).
         \item Forma ovalada.
         \item Textura lisa.
@@ -105,7 +105,18 @@
     \subsection{Características de las Fotos}
     Para el desarrollo del proyecto es necesario conseguir un conjunto de pruebas que permitan verificar su correcto funcionamiento. Este conjunto de pruebas son fotos tomadas con un celular \textit{Iphone SE 2020}\cite{iphone}, esto debido a que era el celular disponible por uno de los participantes del proyecto.
 
-    Las imagen se procesan
+    Las imagen se tomaron con flash (para evitar sombras que puedan interferir con el propósito) y serán procesadas por el sistema, sin embargo existió un preprocesamiento dado por defecto por el celular el cual no se puede evitar.
+
+    \subsection{Procesamiento previo al Análisis de la Imagen}
+    Antes de analizar la imagen dada, se aplican algunos filtros para mejorar la imagen usando OpenCV\cite{opencv}:
+    \begin{itemize}
+        \item Primero se aplica un filtro de desenfoque Gaussiano para reducir el ruido en la imagen.
+        \item Se convierte la imagen de BGR a HSV para facilitar la segmentación por color.
+        \item Se aplica un filtro de color para segmentar los frijoles de las piedras.
+    \end{itemize}
+
+    \subsection{Segmentación de los Frijoles}
+    Para segmentar los frijoles de las piedras se analiza el color (usando un filtro de color), la forma (circularidad de los objetos) y la textura (suavidad de los objetos).
     
 
 
