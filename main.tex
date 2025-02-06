@@ -60,6 +60,12 @@
     \IEEEauthorblockN{
         Hector Israel Cruz Resendez\IEEEauthorrefmark{1}
     }
+    \IEEEauthorblockN{
+        Dael Tovar Escamilla\IEEEauthorrefmark{1}
+    }
+    \IEEEauthorblockN{
+        Jose Angel Alfaro Zurita\IEEEauthorrefmark{1}
+    }
     % En caso de trabajos en equipo, poner a todos los autores 
     % en estricto ORDEN ALFABETICO
     %\author{\IEEEauthorblockN{Michael Shell\IEEEauthorrefmark{1},
@@ -74,12 +80,14 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract} 
-    
+    En este documento se describe un sistema para detectar piedras en frijoles solamente mediante procesamiento de imágenes. Utilizando separación de color, operaciones morfológicas y análisis de contornos, se identifican piedras en frijoles pintos y negros. El sistema aplica umbrales (HSV o LAB), usa OpenCV para la segmentación y cuya interfaz es desarrollada usando PyQt6. Aunque logra resultados consistentes bajo condiciones controladas, muestra limitada robustez ante variaciones de iluminación.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introducción}
-    % 
+    La detección de piedras en los frijoles es un problema común en la industria alimentaria, ya que la presencia de piedras en los frijoles puede dañar los molinos y causar problemas de salud en los consumidores. En este trabajo se propone un sistema para la detección de piedras en los frijoles, utilizando solamente análisis de imágenes. El sistema se basa en la identificación de diferencias morfológicas y de color entre los frijoles y las piedras, sin recurrir a redes neuronales. 
+    
+    El sistema se propone como una alternativa a los métodos ya existentes en la detección de piedras en los frijoles\cite{limpieza}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Desarrollo Experimental}
@@ -111,69 +119,41 @@
     Las imagen se tomaron con flash (tratando de evitar sombras que puedan interferir con el análisis de la imagen) y llevaran un fondo blanco o equivalente, mientras los frijoles se encontraran esparcidos a lo largo de la imagen, sin algun patron aparente.
 
     \subsection{Procesamiento previo al Análisis de la Imagen}
-    Antes de analizar la imagen dada, se aplican varios filtros y transformaciones para tratar de facilitar la detección que se buscaba:
-
+    Se realizan los siguientes pasos para preprocesar la imagen:
     \begin{itemize}
-        \item Se redimensiona la imagen a un tamaño manejable para optimizar el procesamiento (esto debido al gran tamaño de las imágenes de con la que se probo).
-        \item Se aplica un filtro de desenfoque Gaussiano (GaussianBlur) para reducir el ruido y suavizar la imagen\cite{gaussianblur}.
-        \item Se convierte la imagen del espacio de color RGB a HSV\cite{rgbhsv} (Hue, Saturation, Value) para facilitar la segmentación por color (esto porque HSV es menos sensible a cambios de iluminación lo que ayuda a la detección de objetos).
-        \item Se detecta si es frijol pinto o negro basado en el color dominante de la imagen.
-        \item Se aplican máscaras de color específicas para cada tipo de frijol:
-        \begin{itemize}
-            \item Para frijol negro: Se filtran tonos oscuros cercanos al negro
-            \item Para frijol pinto: Se filtran tonos café claro o cercanos al blanco hueso 
-        \end{itemize}
-        \item Se aplican operaciones morfológicas (erosión y dilatación) para eliminar ruido y mejorar la segmentación\cite{morfologico}.
+        \item La imagen se carga y se redimensiona para ajustarse al tamaño de la interfaz gráfica.
+        \item Se crea una copia en formato OpenCV para realizar el procesamiento.
+        \item Para frijoles negros, se reduce la imagen (escala 0.5) y se convierte a espacio HSV, permitiendo aplicar máscaras basadas en umbrales específicos y operaciones morfológicas (estos valores se obtuvieron a prueba y error) para eliminar ruido.
+        \item Para frijoles pintos, la imagen se transforma al espacio LAB y se aplican umbrales en sus canales, junto a filtros morfológicos (de igual manera también se obtuvieron a prueba y error), para resaltar las piedras.
+        \item Se utiliza el color dominante de la imagen para elegir la vía de procesamiento adecuada.
     \end{itemize}
-
-    \subsection{Segmentación de las Piedras}
     
-    Para este momento gracias al preprocesamiento debería de ser sencillo segmentar; se realiza los siguientes pasos:
+    \subsection{Segmentación de las Piedras}
+    Con base en el preprocesamiento, la segmentación se realiza de la siguiente forma:
     \begin{enumerate}
-        \item Se aplica un umbral adaptativo para separar los objetos del fondo.
-        \item Se utiliza la función findContours para detectar los contornos de los objetos.
-        \item Se filtran los contornos por área para eliminar objetos muy pequeños o muy grandes.
-        \item Para cada contorno válido:
+        \item Se aplica una máscara de color: en HSV para frijoles negros y en LAB para frijoles pintos (esto porque al estar realizando la detección de frijoles pintos se leyo\cite{lab} que LAB era superior a HSV)
+        \item Se emplean operaciones morfológicas para reducir pequeños ruidos y cerrar huecos en la imagen afectada por la máscara\ref{fig:mascara_negros}\ref{fig:mascara_pintos}.
+        \item Se extraen los contornos utilizando la función \texttt{findContours} de OpenCV.
+        \item Los contornos se filtran en función de criterios:
         \begin{itemize}
-            \item Se calcula su área y perímetro 
-            \item Se determina la forma aproximada usando approxPolyDP
-            \item Se analiza el color promedio dentro del contorno para detectar si es frijol o piedra
+            \item Para frijoles negros, se consideran aquellos con área entre 1350 y 8000 píxeles, ratio de convexidad superior a 0.5 y al menos 5 vértices.
+            \item Para frijoles pintos, se filtran con área mayor a 1900 píxeles, circularidad entre 0.15 y 0.65, ratio de convexidad mayor a 0.4 y entre 6 y 15 vértices.
         \end{itemize}
-        \item Se clasifica como piedra si:
-        \begin{itemize}
-            \item Para frijoles negros:
-            \begin{itemize}
-                \item Área entre 1350 y 8000 píxeles
-                \item Ratio de convexidad mayor a 0.5
-                \item Número de vértices mayor a 5
-                \item Color cercano a los tonos grises definidos (\#FCFFEE, \#FFF1E5, \#AB8683)
-            \end{itemize}
-            \item Para frijoles pintos:
-            \begin{itemize}
-                \item Área mayor a 1900 píxeles
-                \item Circularidad entre 0.15 y 0.65
-                \item Ratio de convexidad mayor a 0.4
-                \item Número de vértices entre 6 y 15
-                \item Color dentro del rango LAB especificado (L: [15-75], a: [115-145], b: [115-145])
-            \end{itemize}
-        \end{itemize}
-        \item Se resaltan las piedras
+        \item Finalmente, se resaltan dichos contornos sobre la imagen original para visualizar la detección de piedras.
     \end{enumerate}
 
-    Cada tipo de frijol se maneja de forma diferente debido a la diferencia de entornos de las fotos. 
+    El color de las piedras se obtuvo utilizando la herramienta \textit{ColorPicker}\cite{colorpicker} que viene integrada en el entorno de escritorio KDE con el paquete \textit{kdeplasma-addons}. Cada tipo de frijol se maneja de forma diferente debido a la diferencia de entornos de las fotos.
 
     \subsection{Interfaz Gráfica}
-    La interfaz gráfica se desarrolla en PyQt6\cite{pyqt6} y consta de 2 secciones principales:
+    La interfaz gráfica se desarrollo en PyQt6\cite{pyqt6} y consta de 2 secciones principales:
     \begin{enumerate}
         \item Sección de carga de imagen: Donde se carga la imagen a analizar.
-        \item Sección de resultados: Donde se muestra la imagen original y la imagen con los objetos detectados.
-        \item Botón de procesamiento: Para analizar la imagen y mostrar los resultados.
-        \item Botón de guardar: Para guardar la imagen con los objetos detectados.
+        \item Sección de resultados: Donde se muestra la imagen original con los objetos detectados de manera destacada.
     \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Resultados}
-    En la figura \ref{fig:res1} se muestra la . Mientras tanto, la figura \ref{fig:res2} muestra un ejemplo de la detección de piedras en frijoles pintos. Por último, la figura \ref{fig:res3} muestra un ejemplo de la detección de piedras en frijoles negros.
+    En la figura \ref{fig:res1} se muestra la interfaz del sistema. Mientras tanto, la figura \ref{fig:res2} muestra un ejemplo de la detección de piedras en frijoles pintos. Por último, la figura \ref{fig:res3} muestra un ejemplo de la detección de piedras en frijoles negros.
 
     % images/UI.png
     \begin{figure}[H]
@@ -187,7 +167,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=\breite\linewidth]{images/pintos.png}
-        \caption{}
+        \caption{Ejemplificación de la detección de piedras en los frijoles pintos}
         \label{fig:res2}
     \end{figure}
 
@@ -195,89 +175,106 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=\breite\linewidth]{images/negros.png}
-        \caption{}
+        \caption{Ejemplificación de la detección de piedras en los frijoles negros}
         \label{fig:res3}
     \end{figure}
 
     Los casos que se muestran son exitosos. A continuación se muestran las pruebas con imágenes nada controladas que incluso llegan a incumplir una calidad de imagen parecida a las imágenes que se probaron al realizar el programa, lo cual demuestra la baja robustez del sistema desarrollado.
 
-    % test1.png
+        % test1.png
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test1.png}
+            \caption{Resultados para test 1}
+            \label{fig:test1}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test2.png}
+            \caption{Resultados para test 2}
+            \label{fig:test2}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test3.png}
+            \caption{Resultados para test 3}
+            \label{fig:test3}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test4.png}
+            \caption{Resultados para test 4}
+            \label{fig:test4}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test5.png}
+            \caption{Resultados para test 5}
+            \label{fig:test5}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test6.png}
+            \caption{Resultados para test 6}
+            \label{fig:test6}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test7.png}
+            \caption{Resultados para test 7}
+            \label{fig:test7}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test8.png}
+            \caption{Resultados para test 8}
+            \label{fig:test8}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test9.png}
+            \caption{Resultados para test 9}
+            \label{fig:test9}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=\breite\linewidth]{images/test10.png}
+            \caption{Resultados para test 10}
+            \label{fig:test10}
+        \end{figure}
+
+    Como se puede observar en los test, principalmente el cambio que existe entre las imagenes es la forma en que se tomo la foto, al tener una forma distinta de procesamiento 
+
+    % images/mascara_pintos.png
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\breite\linewidth]{images/test1.png}
-        \caption{}
-        \label{fig:test1}
+        \includegraphics[width=\breite\linewidth]{images/mascara_pintos.png}
+        \caption{Máscara de Piedras en Frijoles Pintos}
+        \label{fig:mascara_pintos}
     \end{figure}
 
+    % images/mascara_negros.png
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\breite\linewidth]{images/test2.png}
-        \caption{}
-        \label{fig:test2}
+        \includegraphics[width=\breite\linewidth]{images/mascara_negros.png}
+        \caption{Máscara de Piedras en Frijoles Negros}
+        \label{fig:mascara_negros}
     \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test3.png}
-        \caption{}
-        \label{fig:test3}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test4.png}
-        \caption{}
-        \label{fig:test4}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test5.png}
-        \caption{}
-        \label{fig:test5}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test6.png}
-        \caption{}
-        \label{fig:test6}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test7.png}
-        \caption{}
-        \label{fig:test7}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test8.png}
-        \caption{}
-        \label{fig:test8}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test9.png}
-        \caption{}
-        \label{fig:test9}
-    \end{figure}
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\breite\linewidth]{images/test10.png}
-        \caption{}
-        \label{fig:test10}
-    \end{figure}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusión}
-    En este trabajo se propone un proyecto con la capacidad de detectar piedras entre un conjunto de frijoles usando solamente análisis de imágenes. Para lograr esto en palabras resumidas se usaron 2 características particulares de los frijoles la diferente convexidad que existe entre un frijol y una piedra, al igual que la diferencia del color. No se encontró algún proyecto en el cual podría inspirarse nuestro 
+    En este trabajo se propone un proyecto con la capacidad de detectar piedras entre un conjunto de frijoles usando solamente análisis de imágenes. Para lograr esto se usaron 2 características particulares de los frijoles; la diferente convexidad (para conocer la forma) que existe entre un frijol y una piedra, y las diferencias del color (esto haciendo uso de máscaras\cite{mask}). No se encontró algún proyecto en el cual podría inspirarse el nuestro 
 
-    A pesar de la nula experticia en el tema de análisis de imágenes por parte del equipo, el resultado fue funcional, mas simple; un sistema con cierta cantidad de asertividad, mas no con la suficiente robustez.
+    A pesar de la nula experticia en análisis de imágenes por parte del equipo, el resultado fue funcional, no obstante, simple; un sistema con cierta cantidad de asertividad, más no con una gran robustez.
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
