@@ -103,22 +103,40 @@
     \end{enumerate}
 
     \subsection{Características de las Fotos}
-    Para el desarrollo del proyecto es necesario conseguir un conjunto de pruebas que permitan verificar su correcto funcionamiento. Este conjunto de pruebas son fotos tomadas con un celular \textit{Iphone SE 2020}\cite{iphone}, esto debido a que era el celular disponible por uno de los participantes del proyecto.
+    Para el desarrollo del proyecto es necesario conseguir un conjunto de pruebas que permitan verificar su correcto funcionamiento. Este conjunto de pruebas son fotos tomadas con un celular \textit{Iphone SE 2020}\cite{iphone} con dimesiones de $4,032 \times 3,024$ o $3,024 \times 4,032$, esto debido a que era el celular disponible por uno de los participantes del proyecto.
 
-    Las imagen se tomaron con flash (para evitar sombras que puedan interferir con el propósito) y serán procesadas por el sistema, sin embargo existió un preprocesamiento dado por defecto por el celular el cual no se puede evitar.
+    Las imagen se tomaron con flash (tratando de evitar sombras que puedan interferir con el análisis de la imagen) y llevaran un fondo blanco o equivalente, mientras los frijoles se encontraran esparcidos a lo largo de la imagen, sin algun patron aparente.
 
     \subsection{Procesamiento previo al Análisis de la Imagen}
-    Antes de analizar la imagen dada, se aplican algunos filtros para mejorar la imagen usando OpenCV\cite{opencv}:
+    Antes de analizar la imagen dada, se aplican varios filtros y transformaciones para tratar de facilitar la detección que se buscaba:
+
     \begin{itemize}
-        \item Primero se aplica un filtro de desenfoque Gaussiano para reducir el ruido en la imagen.
-        \item Se convierte la imagen de BGR a HSV para facilitar la segmentación por color.
-        \item Se aplica un filtro de color para segmentar los frijoles de las piedras.
+        \item Se redimensiona la imagen a un tamaño manejable para optimizar el procesamiento (esto debido al gran tamaño de las imágenes de con la que se probo).
+        \item Se aplica un filtro de desenfoque Gaussiano (GaussianBlur) para reducir el ruido y suavizar la imagen\cite{gaussianblur}.
+        \item Se convierte la imagen del espacio de color RGB a HSV\cite{rgbhsv} (Hue, Saturation, Value) para facilitar la segmentación por color (esto porque HSV es menos sensible a cambios de iluminación lo que ayuda a la detección de objetos).
+        \item Se aplican máscaras de color específicas para cada tipo de frijol:
+        \begin{itemize}
+            \item Para frijol negro: Se filtran tonos oscuros cercanos al negro
+            \item Para frijol pinto: Se filtran tonos café claro o cercanos al blanco hueso 
+        \end{itemize}
+        \item Se aplican operaciones morfológicas (erosión y dilatación) para eliminar ruido y mejorar la segmentación\cite{morfologico}.
     \end{itemize}
 
     \subsection{Segmentación de los Frijoles}
-    Para segmentar los frijoles de las piedras se analiza el color (usando un filtro de color), la forma (circularidad de los objetos) y la textura (suavidad de los objetos).
     
-
+    Para este momento gracias al preprocesamiento debería de ser sencillo segmentar; lo que se realiza mediante los siguientes pasos:
+    \begin{enumerate}
+        \item Se aplica un umbral adaptativo para separar los objetos del fondo.
+        \item Se utiliza la función findContours para detectar los contornos de los objetos.
+        \item Se filtran los contornos por área para eliminar objetos muy pequeños o muy grandes.
+        \item Para cada contorno válido:
+        \begin{itemize}
+            \item Se calcula su área y perímetro
+            \item Se determina la forma aproximada usando approxPolyDP
+            \item Se analiza el color promedio dentro del contorno
+            \item Se clasifica como frijol o piedra según sus características
+        \end{itemize}
+    \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Resultados}
