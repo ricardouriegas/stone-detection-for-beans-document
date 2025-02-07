@@ -80,7 +80,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract} 
-    En este documento se describe un sistema para detectar piedras en frijoles solamente mediante procesamiento de imágenes. Utilizando separación de color, operaciones morfológicas y análisis de contornos, se identifican piedras en frijoles pintos y negros. El sistema aplica umbrales (HSV o LAB), usa OpenCV para la segmentación y cuya interfaz es desarrollada usando PyQt6. Aunque logra resultados consistentes bajo condiciones controladas, si considerásemos un entorno completamente variable, la robustez del sistema podría verse comprometida.
+    En este documento se describe un sistema para detectar piedras en frijoles solamente mediante procesamiento de imágenes. Utilizando separación de color, operaciones morfológicas y análisis de contornos, se identifican piedras en frijoles pintos y negros. El sistema aplica umbrales (HSV o LAB), usa OpenCV para la segmentación y cuya interfaz es desarrollada usando PyQt6. Aunque logra resultados consistentes bajo condiciones controladas, si considerásemos un entorno completamente variable, la robustez del sistema se ve comprometida.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -91,8 +91,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Desarrollo Experimental}
-    En este trabajo se desarrollo un sistema capaz de detectar piedras en los frijoles dada una foto (sin usar ningún tipo de red neuronal). Para ello se utiliza la librería OpenCV\cite{opencv} en Python\cite{python}, en combinación de la librería PyQt6\cite{pyqt6} para la interfaz gráfica.
-    Debido a las limitaciones de tiempo y recursos, se desarrolla el sistema solamente para 2 tipos de frijoles; pinto y negro. 
+    Se desarrollo un sistema capaz de detectar piedras en los frijoles dada una foto (sin usar ningún tipo de red neuronal). Para ello se utiliza la librería OpenCV\cite{opencv} en Python\cite{python}, en combinación de la librería PyQt6\cite{pyqt6} para la interfaz gráfica.
+    Debido a las limitaciones de tiempo y recursos, el sistema se prueba solamente para 2 tipos de frijoles; pinto y negro. 
 
     \subsection{Características del Frijol}
     \subsubsection{Frijol Pinto}
@@ -101,7 +101,7 @@
         \item Frijol color cafe claro con manchas cafe oscuro.
         \item Las piedras que llegan a aparecer en este tipo de frijoles son color negro.
         \item Forma ovalada.
-        \item Textura lisa.
+        \item Textura mas lisa que el negro, mas suave que el negro.
     \end{enumerate}
 
     \subsubsection{Frijol Negro}
@@ -110,13 +110,13 @@
         \item Color negro uniforme con un punto blanco en el hilum\cite{semillas}.
         \item Las piedras que llegan a aparecer en este tipo de frijoles son color gris claro (cercano al color hueso\cite{pantone}).
         \item Forma ovalada.
-        \item Textura lisa.
+        \item Textura lisa, dura y brillante.
     \end{enumerate}
 
     \subsection{Características de las Fotos}
     Para el desarrollo del proyecto es necesario conseguir un conjunto de pruebas que permitan verificar su correcto funcionamiento. Este conjunto de pruebas son fotos tomadas con un celular \textit{iPhone SE 2020}\cite{iphone} con dimesiones de $4,032 \times 3,024$ o $3,024 \times 4,032$, esto debido a que era el celular disponible por uno de los participantes del proyecto.
 
-    Las imagen se tomaron con flash (tratando de evitar sombras que puedan interferir con el análisis de la imagen) y llevaran un fondo blanco o equivalente, mientras los frijoles se encontraran esparcidos a lo largo de la imagen, sin algun patron aparente.
+    Las imágenes se tomaron con flash (tratando de evitar sombras que puedan interferir con el análisis de la imagen), con un fondo blanco o equivalente, y con los frijoles esparcidos a lo largo de la imagen sin ningún patron aparente.
 
     \subsection{Procesamiento previo al Análisis de la Imagen}
     Se realizan los siguientes pasos para preprocesar la imagen:
