@@ -123,9 +123,8 @@
     \begin{itemize}
         \item La imagen se carga y se redimensiona para ajustarse al tamaño de la interfaz gráfica.
         \item Se crea una copia en formato OpenCV para realizar el procesamiento.
-        \item Para frijoles negros, se reduce la imagen (escala 0.5) y se convierte a espacio HSV, permitiendo aplicar máscaras basadas en umbrales específicos y operaciones morfológicas (estos valores se obtuvieron a prueba y error) para eliminar ruido.
-        \item Para frijoles pintos, la imagen se transforma al espacio LAB y se aplican umbrales en sus canales, junto a filtros morfológicos (de igual manera también se obtuvieron a prueba y error), para resaltar las piedras.
-        \item Se utiliza el color dominante de la imagen para elegir la vía de procesamiento adecuada.
+        \item Para frijoles negros, se reduce la imagen (escala 0.5, porque están en muy alta calidad) y se convierte a espacio HSV, permitiendo aplicar máscaras basadas en umbrales específicos y operaciones morfológicas (estos valores se obtuvieron a prueba y error) para eliminar ruido.
+        \item Se utiliza el color dominante de la imagen para elegir la vía de procesamiento adecuada, si mayormente es negro, entonces se detecta como negros, y si no entonces se clasificara como pinto.
     \end{itemize}
     
     \subsection{Segmentación de las Piedras}
@@ -144,24 +143,40 @@
 
     El color de las piedras se obtuvo utilizando la herramienta \textit{ColorPicker}\cite{colorpicker} que viene integrada en el entorno de escritorio KDE con el paquete \textit{kdeplasma-addons}. Cada tipo de frijol se maneja de forma diferente debido a la diferencia de entornos de las fotos.
 
-    \subsection{Interfaz Gráfica}
-    La interfaz gráfica se desarrollo en PyQt6\cite{pyqt6} y consta de 2 secciones principales:
-    \begin{enumerate}
-        \item Sección de carga de imagen: Donde se carga la imagen a analizar.
-        \item Sección de resultados: Donde se muestra la imagen original con los objetos detectados de manera destacada.
-    \end{enumerate}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Resultados}
-    En la figura \ref{fig:res1} se muestra la interfaz del sistema. Mientras tanto, la figura \ref{fig:res2} muestra un ejemplo de la detección de piedras en frijoles pintos. Por último, la figura \ref{fig:res3} muestra un ejemplo de la detección de piedras en frijoles negros.
-
+    \subsection{Interfaz Gráfica}
     % images/UI.png
     \begin{figure}[H]
         \centering
         \includegraphics[width=\breite\linewidth]{images/UI.png}
-        \caption{Interfaz del Sistema}
+        \caption{Interfaz del Sistema al Iniciar el Programa}
         \label{fig:res1}
     \end{figure}
+
+    La interfaz gráfica se desarrolló en PyQt6\cite{pyqt6} y consta de los siguientes elementos:
+    
+    % images/secciones.png
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\breite\linewidth]{images/secciones.png}
+        \caption{Secciones de la Interfaz Marcadas con Números para cada Sección}
+        \label{fig:secciones}
+    \end{figure}
+    
+    \begin{enumerate}
+        \item "Open Image": Botón para cargar una imagen.
+        \item "Procesar": Botón para procesar la imagen, detectando los frijoles.
+        \item "Reserved": Botón reservado para futuras implementaciones.
+        \item "Guardar": Botón para guardar la imagen procesada.
+        \item Sección izquierda: Contiene la imagen original.
+        \item Sección derecha: Contiene la imagen procesada.
+    \end{enumerate}
+
+
+    \subsection{Resultados de la Detección}
+    La figura \ref{fig:res2} muestra un ejemplo de la detección de piedras en frijoles pintos. Por último, la figura \ref{fig:res3} muestra un ejemplo de la detección de piedras en frijoles negros.
 
     % images/pintos.png
     \begin{figure}[H]
@@ -179,7 +194,7 @@
         \label{fig:res3}
     \end{figure}
 
-    Los casos que se muestran son exitosos. A continuación se muestran las pruebas con imágenes nada controladas que incluso llegan a incumplir una calidad de imagen parecida a las imágenes que se probaron al realizar el programa, lo cual demuestra la baja robustez del sistema desarrollado.
+    Los casos que se muestran son exitosos. A continuación se muestran las pruebas con imágenes nada controladas que incluso llegan a incumplir una calidad de imagen parecida a las imágenes que se probaron al realizar el programa, lo cual demuestra las flaquezas del sistema desarrollado.
 
         % test1.png
         \begin{figure}[H]
