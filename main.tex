@@ -80,7 +80,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract} 
-    En este documento se describe un sistema para detectar piedras en frijoles solamente mediante procesamiento de imágenes. Utilizando separación de color, operaciones morfológicas y análisis de contornos, se identifican piedras en frijoles pintos y negros. El sistema aplica umbrales (HSV o LAB), usa OpenCV para la segmentación y cuya interfaz es desarrollada usando PyQt6. Aunque logra resultados consistentes bajo condiciones controladas, muestra limitada robustez ante variaciones de iluminación.
+    En este documento se describe un sistema para detectar piedras en frijoles solamente mediante procesamiento de imágenes. Utilizando separación de color, operaciones morfológicas y análisis de contornos, se identifican piedras en frijoles pintos y negros. El sistema aplica umbrales (HSV o LAB), usa OpenCV para la segmentación y cuya interfaz es desarrollada usando PyQt6. Aunque logra resultados consistentes bajo condiciones controladas, si considerásemos un entorno completamente variable, la robustez del sistema podría verse comprometida.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,7 +114,7 @@
     \end{enumerate}
 
     \subsection{Características de las Fotos}
-    Para el desarrollo del proyecto es necesario conseguir un conjunto de pruebas que permitan verificar su correcto funcionamiento. Este conjunto de pruebas son fotos tomadas con un celular \textit{Iphone SE 2020}\cite{iphone} con dimesiones de $4,032 \times 3,024$ o $3,024 \times 4,032$, esto debido a que era el celular disponible por uno de los participantes del proyecto.
+    Para el desarrollo del proyecto es necesario conseguir un conjunto de pruebas que permitan verificar su correcto funcionamiento. Este conjunto de pruebas son fotos tomadas con un celular \textit{iPhone SE 2020}\cite{iphone} con dimesiones de $4,032 \times 3,024$ o $3,024 \times 4,032$, esto debido a que era el celular disponible por uno de los participantes del proyecto.
 
     Las imagen se tomaron con flash (tratando de evitar sombras que puedan interferir con el análisis de la imagen) y llevaran un fondo blanco o equivalente, mientras los frijoles se encontraran esparcidos a lo largo de la imagen, sin algun patron aparente.
 
@@ -131,13 +131,13 @@
     \subsection{Segmentación de las Piedras}
     Con base en el preprocesamiento, la segmentación se realiza de la siguiente forma:
     \begin{enumerate}
-        \item Se aplica una máscara de color: en HSV para frijoles negros y en LAB para frijoles pintos (esto porque al estar realizando la detección de frijoles pintos se leyo\cite{lab} que LAB era superior a HSV)
+        \item Se aplica una máscara para cada color: en HSV para frijoles negros y en LAB para frijoles pintos (esto porque al estar realizando la detección de frijoles pintos se leyó\cite{lab} que LAB era superior a HSV)
         \item Se emplean operaciones morfológicas para reducir pequeños ruidos y cerrar huecos en la imagen afectada por la máscara\ref{fig:mascara_negros}\ref{fig:mascara_pintos}.
-        \item Se extraen los contornos utilizando la función \texttt{findContours} de OpenCV.
-        \item Los contornos se filtran en función de criterios:
+        \item Se extraen los contornos utilizando la función \textit{findContours} de OpenCV.
+        \item Los contornos se filtran en función de criterios calculados a prueba y error:
         \begin{itemize}
             \item Para frijoles negros, se consideran aquellos con área entre 1350 y 8000 píxeles, ratio de convexidad superior a 0.5 y al menos 5 vértices.
-            \item Para frijoles pintos, se filtran con área mayor a 1900 píxeles, circularidad entre 0.15 y 0.65, ratio de convexidad mayor a 0.4 y entre 6 y 15 vértices.
+            \item Para frijoles pintos, se filtran con área mayor a 1200 píxeles, circularidad entre 0.15 y 0.65, ratio de convexidad mayor a 0.4 y entre 6 y 15 vértices.
         \end{itemize}
         \item Finalmente, se resaltan dichos contornos sobre la imagen original para visualizar la detección de piedras.
     \end{enumerate}
@@ -274,7 +274,7 @@
 \section{Conclusión}
     En este trabajo se propone un proyecto con la capacidad de detectar piedras entre un conjunto de frijoles usando solamente análisis de imágenes. Para lograr esto se usaron 2 características particulares de los frijoles; la diferente convexidad (para conocer la forma) que existe entre un frijol y una piedra, y las diferencias del color (esto haciendo uso de máscaras\cite{mask}). No se encontró algún proyecto en el cual podría inspirarse el nuestro 
 
-    A pesar de la nula experticia en análisis de imágenes por parte del equipo, el resultado fue funcional, no obstante, simple; un sistema con cierta cantidad de asertividad, más no con una gran robustez.
+    A pesar de la nula experticia en análisis de imágenes por parte del equipo, el resultado fue funcional, no obstante, simple; un sistema con cierta cantidad de asertividad, más no con una gran robustez debido a la inmensa variedad de piedras y frijoles existentes.
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
